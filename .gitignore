@@ -1,0 +1,4 @@
+src/common/config/
+node_modules/
+.env.development
+.env.production
