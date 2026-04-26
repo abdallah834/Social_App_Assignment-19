@@ -1,6 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const notification_service_1 = require("./../../common/services/notification/notification.service");
 const google_auth_library_1 = require("google-auth-library");
+const config_1 = require("../../common/config/config");
 const enums_1 = require("../../common/enums");
 const provider_enums_1 = require("../../common/enums/provider.enums");
 const exceptions_1 = require("../../common/exceptions");
@@ -9,15 +11,16 @@ const redis_1 = require("../../common/services/redis");
 const email_1 = require("../../common/utils/email");
 const security_1 = require("../../common/utils/security");
 const user_repo_1 = require("../../DB/repository/user.repo");
-const config_1 = require("../../common/config/config");
 class AuthService {
     userRepo;
     redis;
     tokenService;
+    notification;
     constructor() {
         this.userRepo = new user_repo_1.UserRepo();
         this.redis = redis_1.redisService;
         this.tokenService = new jwt_1.TokenService();
+        this.notification = notification_service_1.notificationService;
     }
     async signup({ username, email, password, phone, }) {
         const checkExistingUser = await this.userRepo.findOne({
@@ -47,7 +50,7 @@ class AuthService {
         });
         return user;
     }
-    async login({ email, password }, issuer) {
+    async login({ email, password, FCM }, issuer) {
         const user = await this.userRepo.findOne({
             filter: {
                 email,
@@ -62,6 +65,20 @@ class AuthService {
             throw new exceptions_1.BadRequestException("Invalid login credentials");
         }
         user.phone = await (0, security_1.decrypt)(user.phone);
+        if (FCM) {
+            await this.redis.addFCM(user.id, FCM);
+            const tokens = await this.redis.getFCMs(user.id);
+            if (tokens.length) {
+                const currentDate = new Date().toLocaleString().split(",");
+                await this.notification.sendMultipleNotifications({
+                    tokens,
+                    data: {
+                        title: "Logged in successfully",
+                        body: `Logged in on ${currentDate[0]} at ${currentDate[1]}`,
+                    },
+                });
+            }
+        }
         return this.tokenService.createLoginTokens(user, issuer);
     }
     async generateAndSendConfirmationOtp(email, { subject = enums_1.EmailEnum.CONFIRM_EMAIL, title = "Email verification", } = {}) {

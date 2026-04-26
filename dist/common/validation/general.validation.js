@@ -25,4 +25,25 @@ exports.generalValidationFields = {
     otp: zod_1.z.string("OTP code is required").regex(/^\d{6}$/, {
         error: "Make sure to enter a valid OTP code",
     }),
+    file: function (mimeType) {
+        return zod_1.z
+            .strictObject({
+            fieldname: zod_1.z.string(),
+            originalname: zod_1.z.string(),
+            encoding: zod_1.z.string(),
+            mimetype: zod_1.z.enum(mimeType),
+            buffer: zod_1.z.any().optional(),
+            path: zod_1.z.string().optional(),
+            size: zod_1.z.number(),
+        })
+            .superRefine((args, ctx) => {
+            if (!args.path && !args.buffer) {
+                ctx.addIssue({
+                    code: "custom",
+                    path: ["buffer"],
+                    message: "Either a path or a buffer is needed in order to upload an attachment",
+                });
+            }
+        });
+    },
 };

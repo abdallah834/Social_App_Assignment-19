@@ -20,3 +20,5 @@ __exportStar(require("./provider.enums"), exports);
 __exportStar(require("./token.enums"), exports);
 __exportStar(require("./audience.enums"), exports);
 __exportStar(require("./devicesLogout.enums"), exports);
+__exportStar(require("./multer.enums"), exports);
+__exportStar(require("./post.enums"), exports);

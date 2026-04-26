@@ -9,19 +9,29 @@
     "dev": "cross-env NODE_ENV=development concurrently \"tsc --watch\" \"node --watch dist/main.js\"",
     "prod": "cross-env NODE_ENV=production concurrently \"tsc --watch\" \"node --watch dist/main.js\""
   },
+  "pnpm": {
+    "overrides": {
+      "node-domexception@1.0.0": "-"
+    }
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "packageManager": "pnpm@10.33.0",
+  "packageManager": "pnpm@10.33.2+sha512.a90faf6feeab71ad6c6e57f94e0fe1a12f5dcc22cd754db40ae9593eb6a3e0b6b12e3540218bb37ae083404b1f2ce6db2a4121e979829b4aff94b99f49da1cf8",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1035.0",
+    "@aws-sdk/lib-storage": "^3.1035.0",
+    "@aws-sdk/s3-request-presigner": "^3.1035.0",
     "argon2": "^0.44.0",
     "cors": "^2.8.6",
     "express": "^5.2.1",
+    "firebase-admin": "^13.8.0",
     "google-auth-library": "^10.6.2",
     "ioredis": "^5.10.1",
     "jsonwebtoken": "^9.0.3",
     "mongodb": "^7.1.1",
     "mongoose": "^9.3.3",
+    "multer": "^2.1.1",
     "nodemailer": "^8.0.5",
     "zod": "^4.3.6"
   },
@@ -29,6 +39,7 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
+    "@types/multer": "^2.1.0",
     "@types/node": "^25.5.0",
     "@types/nodemailer": "^8.0.0",
     "concurrently": "^9.2.1",

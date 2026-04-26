@@ -78,7 +78,7 @@ userSchema.pre(
 
     /////////////// to check if a document wasn't already stored in the data base or is newly created by a user we use this.isNew
     ///////ex:to check new posts.
-    console.log(this.isNew);
+    // console.log(this.isNew);
     this.wasNew = this.isNew;
     if (this.isModified("password")) {
       this.password = await generateHash(this.password);
@@ -138,7 +138,7 @@ userSchema.post("insertMany", function (docs) {
 //////////////////////// Find
 userSchema.pre(["findOne", "find"], function () {
   //////// to check search query or filter
-  console.log(this.getFilter());
+  // console.log(this.getFilter());
   const query = this.getFilter();
   if (query.paranoid === false) {
     this.setQuery({ ...query });

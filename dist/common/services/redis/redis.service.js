@@ -153,6 +153,24 @@ class RedisService {
     unverifiedAccountDuration(email) {
         return `User::AccountTTL::${email}`;
     }
+    FCM_key(userId) {
+        return `user:FCM:${userId}`;
+    }
+    async addFCM(userId, FCMToken) {
+        return await this.client.sadd(this.FCM_key(userId), FCMToken);
+    }
+    async removeFCM(userId, FCMToken) {
+        return await this.client.srem(this.FCM_key(userId), FCMToken);
+    }
+    async getFCMs(userId) {
+        return await this.client.smembers(this.FCM_key(userId));
+    }
+    async hasFCMs(userId) {
+        return await this.client.scard(this.FCM_key(userId));
+    }
+    async removeFCMUser(userId) {
+        return await this.client.del(this.FCM_key(userId));
+    }
 }
 exports.RedisService = RedisService;
 exports.redisService = new RedisService();

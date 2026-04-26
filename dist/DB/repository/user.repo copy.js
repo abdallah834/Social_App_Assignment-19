@@ -1,13 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.BaseRepo = void 0;
-class BaseRepo {
-    model;
-    constructor(model) {
-        this.model = model;
-    }
-    create({ data, options, }) {
-        return this.model.create(data, options);
+exports.UserRepo = void 0;
+const models_1 = require("../models");
+const base_repo_1 = require("./base.repo");
+class UserRepo extends base_repo_1.DataBaseRepo {
+    constructor() {
+        super(models_1.userModel);
     }
 }
-exports.BaseRepo = BaseRepo;
+exports.UserRepo = UserRepo;

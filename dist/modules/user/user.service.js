@@ -9,13 +9,42 @@ class UserService {
     userRepo;
     redis;
     tokenService;
+    s3;
     constructor() {
         this.userRepo = new user_repo_1.UserRepo();
         this.tokenService = new services_1.TokenService();
         this.redis = services_1.redisService;
+        this.s3 = services_1.s3Service;
     }
     async profile(user) {
         return user;
+    }
+    async profileImage({ ContentType, originalName, }, user) {
+        const { url } = await this.s3.createPresignedUploadLink({
+            path: `Users/${user._id.toString()}/Profile-Image`,
+            ContentType,
+            originalName,
+        });
+        return { user, url };
+    }
+    async profileCoverImages(files, user) {
+        const oldUrls = user.coverImages;
+        const urls = await this.s3.uploadMultipleAssets({
+            files,
+            path: `Users/${user._id.toString()}/Profile/CoverImages`,
+            storageApproach: enums_1.StorageApproachEnum.DISK,
+            uploadApproach: enums_1.UploadApproachEnum.LARGE,
+        });
+        user.coverImages = urls;
+        if (oldUrls?.length) {
+            await this.s3.deleteMultipleAssets({
+                Keys: oldUrls.map((url) => {
+                    return { Key: url };
+                }),
+            });
+        }
+        await user.save();
+        return user.toJSON();
     }
     async logout({ flag }, user, { jti, iat, sub, }) {
         let statusCode = 200;
@@ -49,6 +78,18 @@ class UserService {
             ttl: iat + Number(config_1.REFRESH_TOKEN_EXPIRATION_TIME),
         });
         return await this.tokenService.createLoginTokens(user, issuer);
+    }
+    async deleteProfile(user) {
+        const userAccount = await this.userRepo.deleteOne({
+            filter: { _id: user._id, force: true },
+        });
+        if (!userAccount.deletedCount) {
+            throw new exceptions_1.NotFoundException("No matching accounts found with this ID");
+        }
+        await this.s3.deleteFolderByPrefix({
+            prefix: `Users/${user.id}`,
+        });
+        return userAccount;
     }
 }
 exports.default = new UserService();

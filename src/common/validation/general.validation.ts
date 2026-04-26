@@ -22,4 +22,26 @@ export const generalValidationFields = {
   otp: z.string("OTP code is required").regex(/^\d{6}$/, {
     error: "Make sure to enter a valid OTP code",
   }),
+  file: function (mimeType: string[]) {
+    return z
+      .strictObject({
+        fieldname: z.string(),
+        originalname: z.string(),
+        encoding: z.string(),
+        mimetype: z.enum(mimeType),
+        buffer: z.any().optional(),
+        path: z.string().optional(),
+        size: z.number(),
+      })
+      .superRefine((args, ctx) => {
+        if (!args.path && !args.buffer) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["buffer"],
+            message:
+              "Either a path or a buffer is needed in order to upload an attachment",
+          });
+        }
+      });
+  },
 };

@@ -16,6 +16,7 @@ exports.login = {
         password: zod_1.z.string({
             error: "Password is required",
         }),
+        FCM: zod_1.z.string().optional(),
     }),
 };
 exports.signup = {

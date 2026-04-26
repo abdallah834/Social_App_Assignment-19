@@ -16,3 +16,5 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./jwt/index"), exports);
 __exportStar(require("./redis/index"), exports);
+__exportStar(require("./aws-sdk/index"), exports);
+__exportStar(require("./notification/index"), exports);

@@ -12,10 +12,20 @@ type issuesType = Array<{
   }>;
 }>;
 export const validation = (schema: schemaType) => {
-  const issues: issuesType = [];
+  let issues: issuesType = [];
   return (req: Request, res: Response, next: NextFunction) => {
     for (const key of Object.keys(schema) as keyRequestType[]) {
       if (!schema[key]) continue;
+      if (req.file) {
+        req.body.file = req.file;
+      }
+      if (req.files) {
+        console.log(req.files);
+        req.body.files = req.files;
+      }
+      if (req.files) {
+        req.body.files = req.files;
+      }
       const validationResult = schema[key].safeParse(req[key]);
       if (!validationResult.success) {
         const error = validationResult.error as ZodError;
@@ -26,12 +36,15 @@ export const validation = (schema: schemaType) => {
           }),
         });
       }
+      if (validationResult.success) {
+        issues = [];
+        next();
+      }
       if (issues.length) {
         throw new BadRequestException("Validation error", {
           issues,
         });
       }
-      next();
     }
   };
 };

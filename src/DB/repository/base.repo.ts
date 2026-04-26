@@ -34,6 +34,7 @@ export abstract class DataBaseRepo<TRawDoc> {
     data: AnyKeys<TRawDoc>[];
     options?: CreateOptions | undefined;
   }): Promise<HydratedDocument<TRawDoc>[]>;
+
   async create({
     data,
     options,
@@ -102,7 +103,7 @@ export abstract class DataBaseRepo<TRawDoc> {
     filter?: QueryFilter<TRawDoc> | undefined;
     projection?: ProjectionType<TRawDoc> | null | undefined;
     options?: QueryOptions<TRawDoc> | null | undefined;
-  }): Promise<any> {
+  }): Promise<any | any[]> {
     const doc = this.model.find(filter, projection);
     if (options?.populate) doc.populate(options.populate as PopulateOptions[]);
     if (options?.lean) doc.lean(options.lean);
