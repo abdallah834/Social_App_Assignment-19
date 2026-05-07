@@ -5,10 +5,12 @@ import { PORT } from "./common/config/config";
 import { redisService } from "./common/services/redis";
 import { mongoDBConnection } from "./DB/db.connections";
 import { globalErrorHandler } from "./middleware";
-import { authRouter, postRouter } from "./modules";
+import { authRouter, gqlSchema, postRouter } from "./modules";
 import { userRouter } from "./modules/user";
-// Takes a function following the common error-first callback style, i.e. taking an (err, value) => ... callback as the last argument, and returns a version that returns promises.
+import { commentRouter } from "./modules/comment";
+import { createHandler } from "graphql-http/lib/use/express";
 
+// Takes a function following the common error-first callback style, i.e. taking an (err, value) => ... callback as the last argument, and returns a version that returns promises.
 // const s3WriteStream = promisify(pipeline);
 export const bootstrap = async () => {
   const app: Express = express();
@@ -18,10 +20,14 @@ export const bootstrap = async () => {
   //////////// global middlewares
   app.use(cors(), express.json());
 
+  //////////////////using GQL
+  app.all("/graphql", createHandler({ schema: gqlSchema }));
   //////////// APIs
   app.use("/auth", authRouter);
   app.use("/user", userRouter);
   app.use("/post", postRouter);
+  app.use("/comment", commentRouter);
+
   ////////////// Invalid Routing
   app.use("/*dummy", (req, res, next) => {
     return res.status(404).json({ Error: "Invalid route" });

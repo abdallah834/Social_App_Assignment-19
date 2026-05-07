@@ -1,5 +1,9 @@
+import { Types } from "mongoose";
 import { z } from "zod";
 export const generalValidationFields = {
+  id: z.string().refine((id) => {
+    return Types.ObjectId.isValid(id);
+  }, "Invalid ID"),
   username: z.coerce
     .string({ error: "Make sure to include a valid username" })
     .min(2, { error: "Minimum characters are 2" })
@@ -45,3 +49,13 @@ export const generalValidationFields = {
       });
   },
 };
+
+export const paginationValidationSchema = {
+  query: z.strictObject({
+    page: z.coerce.string().optional(),
+    size: z.coerce.string().optional(),
+    search: z.string().optional(),
+  }),
+};
+
+export type PaginateDTO = z.infer<typeof paginationValidationSchema.query>;

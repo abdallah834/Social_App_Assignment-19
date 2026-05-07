@@ -7,18 +7,24 @@ const postSchema = new mongoose_1.Schema({
     folderId: { type: String, required: true },
     content: {
         type: String,
-        function() {
-            return this.attachments?.length;
+        required: function () {
+            return !this.attachments?.length;
         },
     },
-    attachments: { type: [String], unique: true, required: true },
+    attachments: { type: [String], default: [] },
     availability: {
         type: Number,
         enum: enums_1.AvailabilityEnum,
         default: enums_1.AvailabilityEnum.PUBLIC,
     },
-    likes: { type: [{ type: mongoose_1.Types.ObjectId }], ref: "User" },
-    tags: { type: [{ type: mongoose_1.Types.ObjectId }], ref: "User" },
+    likes: {
+        type: [{ user: mongoose_1.Types.ObjectId, react: Number }],
+        ref: "User",
+        default: [],
+        _id: false,
+        unique: true,
+    },
+    tags: { type: [{ type: mongoose_1.Types.ObjectId }], ref: "User", default: [] },
     createdBy: { type: mongoose_1.Types.ObjectId, required: true, ref: "User" },
     updatedBy: { type: mongoose_1.Types.ObjectId, ref: "User" },
     deletedAt: { type: Date },
@@ -28,6 +34,14 @@ const postSchema = new mongoose_1.Schema({
     strict: true,
     strictQuery: true,
     collection: "Posts",
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+});
+postSchema.virtual("comments", {
+    localField: "_id",
+    foreignField: "postId",
+    ref: "Comment",
+    justOne: true,
 });
 postSchema.pre("updateOne", { document: true }, function () { });
 postSchema.pre("deleteOne", { document: true }, function () { });
@@ -35,7 +49,7 @@ postSchema.pre("insertMany", function (docs) {
 });
 postSchema.post("insertMany", function (docs) {
 });
-postSchema.pre(["findOne", "find"], function () {
+postSchema.pre(["findOne", "find", "countDocuments"], function () {
     const query = this.getFilter();
     if (query.paranoid === false) {
         this.setQuery({ ...query });
@@ -44,6 +58,8 @@ postSchema.pre(["findOne", "find"], function () {
 });
 postSchema.pre(["updateOne", "findOneAndUpdate"], function () {
     const updateQuery = this.getUpdate();
+    if (Array.isArray(updateQuery))
+        return;
     if (updateQuery.deletedAt) {
         this.setUpdate({ ...updateQuery, $unset: { restoredAt: 1 } });
     }
@@ -68,4 +84,4 @@ postSchema.pre(["deleteOne", "findOneAndDelete"], function () {
         this.setQuery({ deletedAt: { $exists: true }, ...query });
     }
 });
-exports.postModel = mongoose_1.models.Post || (0, mongoose_1.model)("post", postSchema);
+exports.postModel = mongoose_1.models.Post || (0, mongoose_1.model)("Post", postSchema);

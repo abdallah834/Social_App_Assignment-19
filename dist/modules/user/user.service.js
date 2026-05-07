@@ -1,5 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.UserService = void 0;
+const mongoose_1 = require("mongoose");
 const config_1 = require("../../common/config/config");
 const enums_1 = require("../../common/enums");
 const exceptions_1 = require("../../common/exceptions");
@@ -17,7 +19,13 @@ class UserService {
         this.s3 = services_1.s3Service;
     }
     async profile(user) {
-        return user;
+        const userProfile = await this.userRepo.findOne({
+            filter: {
+                _id: mongoose_1.Types.ObjectId.createFromHexString("69f4daf1628daa25b9dc09b1"),
+            },
+            options: { populate: [{ path: "friends" }] },
+        });
+        return userProfile;
     }
     async profileImage({ ContentType, originalName, }, user) {
         const { url } = await this.s3.createPresignedUploadLink({
@@ -92,4 +100,5 @@ class UserService {
         return userAccount;
     }
 }
+exports.UserService = UserService;
 exports.default = new UserService();

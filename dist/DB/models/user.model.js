@@ -8,9 +8,11 @@ const userSchema = new mongoose_1.Schema({
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
     email: { type: String, unique: true, required: true },
-    password: { type: String, required: true },
+    password: { type: String },
     phone: { type: String, maxLength: 67 },
     bio: { type: String, maxLength: 200 },
+    slug: { type: String, required: true },
+    friends: [{ type: mongoose_1.Types.ObjectId, ref: "User" }],
     DOB: { type: Date, required: false },
     profileImage: { type: String },
     coverImages: { type: [String] },
@@ -29,9 +31,6 @@ const userSchema = new mongoose_1.Schema({
         default: enums_1.GenderEnum.MALE,
     },
     provider: { type: Number, default: 0 },
-    extra: {
-        _name: String,
-    },
 }, {
     timestamps: true,
     strict: true,
@@ -99,4 +98,4 @@ userSchema.pre(["deleteOne", "findOneAndDelete"], function () {
         this.setQuery({ deletedAt: { $exists: true }, ...query });
     }
 });
-exports.userModel = mongoose_1.models.User || (0, mongoose_1.model)("user", userSchema);
+exports.userModel = mongoose_1.models.User || (0, mongoose_1.model)("User", userSchema);

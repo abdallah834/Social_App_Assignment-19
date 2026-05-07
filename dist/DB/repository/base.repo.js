@@ -30,7 +30,32 @@ class DataBaseRepo {
             doc.populate(options.populate);
         if (options?.lean)
             doc.lean(options.lean);
+        if (options?.skip)
+            doc.skip(options.skip);
+        if (options?.limit)
+            doc.limit(options.limit);
         return await doc.exec();
+    }
+    async paginate({ filter, projection, options = {}, page = "0", size = "3", }) {
+        let count = -1;
+        const pageInt = parseInt(page);
+        const sizeInt = parseInt(size);
+        if (pageInt > 0) {
+            options.skip = (pageInt - 1) * sizeInt;
+            options.limit = sizeInt;
+            count = await this.model.countDocuments({ filter });
+        }
+        const docs = await this.find({ filter: filter || {}, projection, options });
+        return {
+            docs,
+            ...(pageInt > 0
+                ? {
+                    currentPage: pageInt,
+                    size: sizeInt,
+                    pages: Math.ceil(count / sizeInt),
+                }
+                : {}),
+        };
     }
     async findByID({ _id, projection, options, }) {
         const doc = this.model.findById(_id, projection);
@@ -41,9 +66,21 @@ class DataBaseRepo {
         return await doc.exec();
     }
     async updateOne({ filter, update, options, }) {
+        if (Array.isArray(update)) {
+            return await this.model.updateOne(filter, update, {
+                ...options,
+                updatePipeline: true,
+            });
+        }
         return await this.model.updateOne(filter, { ...update, $inc: { __v: 1 } }, options);
     }
     async findOneAndUpdate({ filter, update, options = { returnDocument: "after" }, }) {
+        if (Array.isArray(update)) {
+            return await this.model.findOneAndUpdate(filter, update, {
+                ...options,
+                updatePipeline: true,
+            });
+        }
         return await this.model.findOneAndUpdate(filter, { ...update, $inc: { __v: 1 } }, options);
     }
     async findByIdAndUpdate({ _id, update, options = { returnDocument: "after" }, }) {

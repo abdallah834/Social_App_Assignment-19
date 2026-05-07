@@ -34,17 +34,35 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const middleware_1 = require("../../middleware");
-const multer_1 = require("../../common/utils/multer");
 const response_1 = require("../../common/response");
-const validators = __importStar(require("./post.validation"));
+const multer_1 = require("../../common/utils/multer");
+const middleware_1 = require("../../middleware");
 const post_service_1 = require("./post.service");
+const validators = __importStar(require("./post.validation"));
+const validation_1 = require("../../common/validation");
+const comment_1 = require("../comment");
 const router = (0, express_1.Router)();
+router.use("/:postId/comment", comment_1.commentRouter);
 router.post("/", (0, middleware_1.authentication)(), (0, multer_1.cloudFileUpload)({ validation: multer_1.fileFieldValidation.image }).array("attachments", 2), (0, middleware_1.validation)(validators.createPost), async (req, res, next) => {
     const data = await post_service_1.postService.createPost({
         ...req.body,
         files: req.files,
     }, req.user);
     (0, response_1.successResponse)({ res, message: "Post created successfully", data });
+});
+router.patch("/update/:postId", (0, middleware_1.authentication)(), (0, multer_1.cloudFileUpload)({ validation: multer_1.fileFieldValidation.image }).array("files", 2), (0, middleware_1.validation)(validators.updatePost), async (req, res, next) => {
+    const updateResult = await post_service_1.postService.updatePost(req.params, {
+        ...req.body,
+        files: req.files,
+    }, req.user);
+    (0, response_1.successResponse)({ res, message: "Post updated", data: updateResult });
+});
+router.get("/list", (0, middleware_1.authentication)(), (0, middleware_1.validation)(validation_1.paginationValidationSchema), async (req, res, next) => {
+    const posts = await post_service_1.postService.allPosts(req.query, req.user);
+    (0, response_1.successResponse)({ res, message: "All posts", data: posts });
+});
+router.patch("/:postId", (0, middleware_1.authentication)(), (0, middleware_1.validation)(validators.reactPost), async (req, res, next) => {
+    const posts = await post_service_1.postService.reactToPost(req.params, req.query, req.user);
+    (0, response_1.successResponse)({ res, message: "All posts", data: posts });
 });
 exports.default = router;

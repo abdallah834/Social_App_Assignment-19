@@ -16,7 +16,7 @@ const authentication = (tokenType = enums_1.TokenType.ACCESS) => {
             throw new exceptions_1.BadRequestException("Missing authorization parts");
         }
         switch (flag) {
-            default:
+            default: {
                 const { decodedToken, userAccount } = await tokenService.decodeToken({
                     token,
                     tokenType,
@@ -24,6 +24,7 @@ const authentication = (tokenType = enums_1.TokenType.ACCESS) => {
                 req.user = userAccount;
                 req.decoded = decodedToken;
                 break;
+            }
         }
         next();
     };

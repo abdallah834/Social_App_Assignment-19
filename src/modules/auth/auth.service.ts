@@ -61,6 +61,7 @@ class AuthService {
         data: {
           username,
           email,
+          slug: username.split(" ").join("-"),
           password: password,
           phone: phone ? phone : null,
         },
@@ -75,6 +76,7 @@ class AuthService {
         title: "Email verification",
       });
     });
+
     return user;
   }
   async login(
@@ -90,11 +92,11 @@ class AuthService {
     });
     if (!user) {
       throw new NotFoundException(
-        "Please make sure to verify you account before login",
+        "Please make sure to verify your account before login",
       );
     }
 
-    if (!(await compareHash(user.password, password))) {
+    if (!(await compareHash(user.password as string, password))) {
       throw new BadRequestException("Invalid login credentials");
     }
 

@@ -17,3 +17,4 @@ Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./base.repo"), exports);
 __exportStar(require("./post.repo"), exports);
 __exportStar(require("./user.repo"), exports);
+__exportStar(require("./comment.repo"), exports);

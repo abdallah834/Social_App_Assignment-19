@@ -12,14 +12,18 @@ const db_connections_1 = require("./DB/db.connections");
 const middleware_1 = require("./middleware");
 const modules_1 = require("./modules");
 const user_1 = require("./modules/user");
+const comment_1 = require("./modules/comment");
+const express_2 = require("graphql-http/lib/use/express");
 const bootstrap = async () => {
     const app = (0, express_1.default)();
     await (0, db_connections_1.mongoDBConnection)();
     await redis_1.redisService.connect();
     app.use((0, cors_1.default)(), express_1.default.json());
+    app.all("/graphql", (0, express_2.createHandler)({ schema: modules_1.gqlSchema }));
     app.use("/auth", modules_1.authRouter);
     app.use("/user", user_1.userRouter);
     app.use("/post", modules_1.postRouter);
+    app.use("/comment", comment_1.commentRouter);
     app.use("/*dummy", (req, res, next) => {
         return res.status(404).json({ Error: "Invalid route" });
     });

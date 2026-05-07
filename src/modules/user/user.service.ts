@@ -16,7 +16,7 @@ import {
 } from "../../common/services";
 import { UserRepo } from "../../DB/repository/user.repo";
 
-class UserService {
+export class UserService {
   private readonly userRepo: UserRepo;
   private readonly redis: RedisService;
   private readonly tokenService: TokenService;
@@ -28,7 +28,13 @@ class UserService {
     this.s3 = s3Service;
   }
   async profile(user: HydratedDocument<IUser>): Promise<any> {
-    return user;
+    const userProfile = await this.userRepo.findOne({
+      filter: {
+        _id: Types.ObjectId.createFromHexString("69f4daf1628daa25b9dc09b1"),
+      },
+      options: { populate: [{ path: "friends" }] },
+    });
+    return userProfile;
   }
   async profileImage(
     {

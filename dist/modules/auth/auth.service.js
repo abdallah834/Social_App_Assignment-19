@@ -35,6 +35,7 @@ class AuthService {
             data: {
                 username,
                 email,
+                slug: username.split(" ").join("-"),
                 password: password,
                 phone: phone ? phone : null,
             },
@@ -59,7 +60,7 @@ class AuthService {
             },
         });
         if (!user) {
-            throw new exceptions_1.NotFoundException("Please make sure to verify you account before login");
+            throw new exceptions_1.NotFoundException("Please make sure to verify your account before login");
         }
         if (!(await (0, security_1.compareHash)(user.password, password))) {
             throw new exceptions_1.BadRequestException("Invalid login credentials");

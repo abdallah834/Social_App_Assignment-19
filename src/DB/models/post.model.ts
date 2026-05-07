@@ -8,18 +8,24 @@ const postSchema = new Schema<IPost>(
     folderId: { type: String, required: true },
     content: {
       type: String,
-      function(this) {
-        return this.attachments?.length;
+      required: function (this) {
+        return !this.attachments?.length;
       },
     },
-    attachments: { type: [String], unique: true, required: true },
+    attachments: { type: [String], default: [] },
     availability: {
       type: Number,
       enum: AvailabilityEnum,
       default: AvailabilityEnum.PUBLIC,
     },
-    likes: { type: [{ type: Types.ObjectId }], ref: "User" },
-    tags: { type: [{ type: Types.ObjectId }], ref: "User" },
+    likes: {
+      type: [{ user: Types.ObjectId, react: Number }],
+      ref: "User",
+      default: [],
+      _id: false,
+      unique: true,
+    },
+    tags: { type: [{ type: Types.ObjectId }], ref: "User", default: [] },
     createdBy: { type: Types.ObjectId, required: true, ref: "User" },
     updatedBy: { type: Types.ObjectId, ref: "User" },
     deletedAt: { type: Date },
@@ -30,9 +36,16 @@ const postSchema = new Schema<IPost>(
     strict: true,
     strictQuery: true,
     collection: "Posts",
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
   },
 );
-
+postSchema.virtual("comments", {
+  localField: "_id",
+  foreignField: "postId",
+  ref: "Comment",
+  justOne: true,
+});
 ////////////////////////////////////////// Mongoose middlewares
 ////////////////////////// Document middlewares
 ////////// the mongoose middlewares need a trigger value ("save","validate","find",etc...)
@@ -51,9 +64,9 @@ postSchema.pre("insertMany", function (docs) {
 postSchema.post("insertMany", function (docs) {
   // console.log(this, docs);
 });
-
+/////////////////////////////implementing soft delete
 //////////////////////// Find
-postSchema.pre(["findOne", "find"], function () {
+postSchema.pre(["findOne", "find", "countDocuments"], function () {
   //////// to check search query or filter
   // console.log(this.getFilter());
   const query = this.getFilter();
@@ -65,8 +78,8 @@ postSchema.pre(["findOne", "find"], function () {
 //////////////////////// Update
 postSchema.pre(["updateOne", "findOneAndUpdate"], function () {
   //////// to check search query or filter
-
   const updateQuery = this.getUpdate() as HydratedDocument<IPost>;
+  if (Array.isArray(updateQuery)) return;
   if (updateQuery.deletedAt) {
     this.setUpdate({ ...updateQuery, $unset: { restoredAt: 1 } });
   }
@@ -93,4 +106,4 @@ postSchema.pre(["deleteOne", "findOneAndDelete"], function () {
     this.setQuery({ deletedAt: { $exists: true }, ...query });
   }
 });
-export const postModel = models.Post || model<IPost>("post", postSchema);
+export const postModel = models.Post || model<IPost>("Post", postSchema);

@@ -1,8 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.generalValidationFields = void 0;
+exports.paginationValidationSchema = exports.generalValidationFields = void 0;
+const mongoose_1 = require("mongoose");
 const zod_1 = require("zod");
 exports.generalValidationFields = {
+    id: zod_1.z.string().refine((id) => {
+        return mongoose_1.Types.ObjectId.isValid(id);
+    }, "Invalid ID"),
     username: zod_1.z.coerce
         .string({ error: "Make sure to include a valid username" })
         .min(2, { error: "Minimum characters are 2" })
@@ -46,4 +50,11 @@ exports.generalValidationFields = {
             }
         });
     },
+};
+exports.paginationValidationSchema = {
+    query: zod_1.z.strictObject({
+        page: zod_1.z.coerce.string().optional(),
+        size: zod_1.z.coerce.string().optional(),
+        search: zod_1.z.string().optional(),
+    }),
 };
