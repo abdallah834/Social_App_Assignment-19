@@ -54,7 +54,7 @@ exports.generalValidationFields = {
 exports.paginationValidationSchema = {
     query: zod_1.z.strictObject({
         page: zod_1.z.coerce.string().optional(),
-        size: zod_1.z.coerce.string().optional(),
+        limit: zod_1.z.coerce.string().optional(),
         search: zod_1.z.string().optional(),
     }),
 };

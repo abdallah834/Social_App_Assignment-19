@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.reactPost = exports.updatePost = exports.createPost = void 0;
+exports.gqlReactToPost = exports.reactPost = exports.updatePost = exports.createPost = void 0;
 const general_validation_1 = require("./../../common/validation/general.validation");
 const zod_1 = __importDefault(require("zod"));
 const enums_1 = require("../../common/enums");
@@ -115,3 +115,7 @@ exports.reactPost = {
         react: zod_1.default.coerce.number(),
     }),
 };
+exports.gqlReactToPost = zod_1.default.strictObject({
+    postId: general_validation_1.generalValidationFields.id,
+    react: zod_1.default.coerce.number(),
+});

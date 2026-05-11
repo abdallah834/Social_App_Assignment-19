@@ -1,7 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.validation = void 0;
+exports.GqlValidation = exports.validation = void 0;
 const exceptions_1 = require("../common/exceptions");
+const gql_excepitions_1 = require("../common/exceptions/gql.excepitions");
 const validation = (schema) => {
     return (req, res, next) => {
         let issues = [];
@@ -33,3 +34,15 @@ const validation = (schema) => {
     };
 };
 exports.validation = validation;
+const GqlValidation = async (schema, args) => {
+    const validationResult = schema.safeParse(args);
+    if (!validationResult.success) {
+        throw (0, gql_excepitions_1.mapGQLError)(new exceptions_1.BadRequestException("Validation error", {
+            issues: validationResult.error.issues.map((issue) => {
+                return { path: issue.path, message: issue.message };
+            }),
+        }));
+    }
+    return true;
+};
+exports.GqlValidation = GqlValidation;

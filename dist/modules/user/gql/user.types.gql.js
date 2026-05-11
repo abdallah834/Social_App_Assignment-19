@@ -27,7 +27,13 @@ exports.gqlRoleEnumType = new graphql_1.GraphQLEnumType({
 exports.OneUserType = new graphql_1.GraphQLObjectType({
     name: "oneUserType",
     fields: () => ({
-        _id: { type: new graphql_1.GraphQLNonNull(graphql_1.GraphQLID) },
+        _id: {
+            type: new graphql_1.GraphQLNonNull(graphql_1.GraphQLID),
+            resolve: (parent) => {
+                console.log(parent);
+                return parent.username;
+            },
+        },
         firstName: { type: new graphql_1.GraphQLNonNull(graphql_1.GraphQLString) },
         lastName: { type: new graphql_1.GraphQLNonNull(graphql_1.GraphQLString) },
         email: { type: new graphql_1.GraphQLNonNull(graphql_1.GraphQLString) },

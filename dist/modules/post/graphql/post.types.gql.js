@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.postListType = exports.singlePostType = exports.gqlAvailabilityEnum = void 0;
+exports.reactToPost = exports.postListType = exports.singlePostType = exports.gqlAvailabilityEnum = void 0;
 const graphql_1 = require("graphql");
 const user_types_gql_1 = require("../../user/gql/user.types.gql");
 const enums_1 = require("../../../common/enums");
@@ -23,7 +23,7 @@ exports.singlePostType = new graphql_1.GraphQLObjectType({
             type: new graphql_1.GraphQLList(user_types_gql_1.OneUserType),
         },
         tags: {
-            type: new graphql_1.GraphQLList(user_types_gql_1.OneUserType),
+            type: new graphql_1.GraphQLList(graphql_1.GraphQLID),
         },
         availability: { type: exports.gqlAvailabilityEnum },
         createdBy: { type: new graphql_1.GraphQLNonNull(user_types_gql_1.OneUserType) },
@@ -49,5 +49,12 @@ exports.postListType = new graphql_1.GraphQLObjectType({
                 },
             }),
         },
+    },
+});
+exports.reactToPost = new graphql_1.GraphQLObjectType({
+    name: "ReactToPostResponse",
+    fields: {
+        message: { type: new graphql_1.GraphQLNonNull(graphql_1.GraphQLString) },
+        data: { type: exports.singlePostType },
     },
 });

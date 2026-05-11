@@ -19,7 +19,13 @@ class PostGQLSchema {
         };
     }
     registerMutation() {
-        return {};
+        return {
+            reactToPost: {
+                type: post_types_gql_1.reactToPost,
+                args: post_args_gql_1.postReactArgs,
+                resolve: this.postResolver.reactToPost,
+            },
+        };
     }
 }
 exports.PostGQLSchema = PostGQLSchema;

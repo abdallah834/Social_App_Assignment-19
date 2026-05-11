@@ -3,13 +3,25 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.postService = exports.PostService = void 0;
 const mongoose_1 = require("mongoose");
 const node_crypto_1 = require("node:crypto");
+const enums_1 = require("../../common/enums");
 const exceptions_1 = require("../../common/exceptions");
 const services_1 = require("../../common/services");
 const post_1 = require("../../common/utils/post");
 const repository_1 = require("../../DB/repository");
 const s3_service_1 = require("./../../common/services/aws-sdk/s3.service");
-const enums_1 = require("../../common/enums");
 class PostService {
+    populate = [
+        {
+            path: "likes",
+        },
+        {
+            path: "tags",
+        },
+        {
+            path: "comments",
+            populate: [{ path: "replies", populate: [{ path: "reply" }] }],
+        },
+    ];
     userRepo;
     redis;
     notification;
@@ -189,19 +201,19 @@ class PostService {
         }
         return updatedPost.toJSON();
     }
-    async allPosts({ size, search, page }, user) {
+    async allPosts({ limit, search, page }, user) {
         const posts = await this.postRepo.paginate({
             filter: {
-                $or: await (0, post_1.getPostsAvailability)(user),
+                $or: (0, post_1.getPostsAvailability)(user),
                 ...(search?.length
                     ?
                         { content: { $regex: search, $options: "i" } }
                     : {}),
             },
             page,
-            size,
+            limit,
             options: {
-                populate: [{ path: "comments", populate: [{ path: "replies" }] }],
+                populate: this.populate,
             },
         });
         return posts;
@@ -211,9 +223,10 @@ class PostService {
             filter: { _id: postId, $or: (0, post_1.getPostsAvailability)(user) },
             update: {
                 ...(Number(react) > enums_1.ReactEnums.REMOVE_LIKE
-                    ? { $addToSet: { likes: { user: user._id, react: Number(react) } } }
-                    : { $pull: { likes: user._id, react } }),
+                    ? { $addToSet: { likes: user._id } }
+                    : { $pull: { likes: user._id } }),
             },
+            populate: this.populate,
         });
         if (!post) {
             throw new exceptions_1.NotFoundException("You are not eligible to like this user's post");

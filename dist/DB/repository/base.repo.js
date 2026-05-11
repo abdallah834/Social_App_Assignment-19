@@ -36,10 +36,10 @@ class DataBaseRepo {
             doc.limit(options.limit);
         return await doc.exec();
     }
-    async paginate({ filter, projection, options = {}, page = "0", size = "3", }) {
+    async paginate({ filter, projection, options = {}, page = "0", limit = "3", }) {
         let count = -1;
         const pageInt = parseInt(page);
-        const sizeInt = parseInt(size);
+        const sizeInt = parseInt(limit);
         if (pageInt > 0) {
             options.skip = (pageInt - 1) * sizeInt;
             options.limit = sizeInt;
@@ -51,7 +51,7 @@ class DataBaseRepo {
             ...(pageInt > 0
                 ? {
                     currentPage: pageInt,
-                    size: sizeInt,
+                    limit: sizeInt,
                     pages: Math.ceil(count / sizeInt),
                 }
                 : {}),
@@ -74,14 +74,18 @@ class DataBaseRepo {
         }
         return await this.model.updateOne(filter, { ...update, $inc: { __v: 1 } }, options);
     }
-    async findOneAndUpdate({ filter, update, options = { returnDocument: "after" }, }) {
+    async findOneAndUpdate({ filter, update, options = { returnDocument: "after" }, populate = [], }) {
         if (Array.isArray(update)) {
-            return await this.model.findOneAndUpdate(filter, update, {
+            return await this.model
+                .findOneAndUpdate(filter, update, {
                 ...options,
                 updatePipeline: true,
-            });
+            })
+                .populate(populate);
         }
-        return await this.model.findOneAndUpdate(filter, { ...update, $inc: { __v: 1 } }, options);
+        return await this.model
+            .findOneAndUpdate(filter, { ...update, $inc: { __v: 1 } }, options)
+            .populate(populate);
     }
     async findByIdAndUpdate({ _id, update, options = { returnDocument: "after" }, }) {
         return await this.model.findByIdAndUpdate(_id, { ...update, $inc: { __v: 1 } }, options);

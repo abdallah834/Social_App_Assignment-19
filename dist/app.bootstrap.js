@@ -19,7 +19,13 @@ const bootstrap = async () => {
     await (0, db_connections_1.mongoDBConnection)();
     await redis_1.redisService.connect();
     app.use((0, cors_1.default)(), express_1.default.json());
-    app.all("/graphql", (0, express_2.createHandler)({ schema: modules_1.gqlSchema }));
+    app.all("/graphql", (0, middleware_1.authentication)(), (0, express_2.createHandler)({
+        schema: modules_1.gqlSchema,
+        context: (req) => ({
+            user: req.raw.user,
+            decodedToken: req.raw.decoded,
+        }),
+    }));
     app.use("/auth", modules_1.authRouter);
     app.use("/user", user_1.userRouter);
     app.use("/post", modules_1.postRouter);
